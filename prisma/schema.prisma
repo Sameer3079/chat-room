@@ -1,19 +1,19 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-datasource db {
-  provider = "postgres"
-  url      = env("DATABASE_URL")
-}
-
 generator client {
   provider = "prisma-client-js"
 }
 
-model Post {
-  id    String @id @default(uuid())
-  title String
-  text  String
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model Message {
+  id       String @id @map("_id")
+  content  String
+  imageUrl String
 
   // To return `Date`s intact through the API we use transformers
   // https://trpc.io/docs/data-transformers
