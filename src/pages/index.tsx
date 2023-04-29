@@ -2,32 +2,32 @@ import {
   Button,
   Card,
   Container,
-  Grid,
   Select,
-  SimpleGrid,
   Skeleton,
-  Stack,
   Text,
   TextInput,
   Title,
 } from '@mantine/core';
 import { trpc } from '../utils/trpc';
 import { NextPageWithLayout } from './_app';
-import { inferProcedureInput } from '@trpc/server';
-import Link from 'next/link';
-import { CSSProperties, Fragment } from 'react';
-import { Message } from '~/models/message';
-import type { AppRouter } from '~/server/routers/_app';
 
 const child = <Skeleton height={140} radius="md" animate={true} />;
-const messagesList: Array<Message> = [
-  { attachment: '', content: 'Hey Sameer', id: '1' },
-  { attachment: '', content: 'Hey Bob', id: '2' },
-  { attachment: '', content: 'Message 1', id: '3' },
-  { attachment: '', content: 'Message 1', id: '4' },
-];
+
+const getFormattedDate = (date: Date): string => {
+  const f = new Intl.DateTimeFormat('en-us', { dateStyle: 'full' });
+  return f.format(date);
+};
+
+const getTime = (date: Date): string => {
+  const f = new Intl.RelativeTimeFormat('en-us', {
+    style: 'long',
+    numeric: 'auto',
+  });
+  return f.format(-1, 'minutes');
+};
+
 const IndexPage: NextPageWithLayout = () => {
-  const utils = trpc.useContext();
+  // const utils = trpc.useContext();
   // const postsQuery = trpc.post.list.useInfiniteQuery(
   //   {
   //     limit: 5,
@@ -38,6 +38,7 @@ const IndexPage: NextPageWithLayout = () => {
   //     },
   //   },
   // );
+  const messagesQuery = trpc.msg.list.useQuery();
 
   // const addPost = trpc.post.add.useMutation({
   //   async onSuccess() {
@@ -89,10 +90,11 @@ const IndexPage: NextPageWithLayout = () => {
             boxShadow: '0 0px 6px rgba(0, 0, 0, 0.25)',
           }}
         >
-          <Select
+          {/* Note: Commented out because this issue exists https://github.com/mantinedev/mantine/issues/2880 */}
+          {/* <Select
             placeholder="Sort order"
             data={[{ value: 'sort-by-time', label: 'Sort by Time' }]}
-          />
+          /> */}
           <Button ml="auto" variant="subtle">
             Asc ⬇️
           </Button>
@@ -103,13 +105,23 @@ const IndexPage: NextPageWithLayout = () => {
 
         {/* Scrollable messages container */}
         <Container w="100%">
-          {messagesList.map((message) => (
-            <Card withBorder radius="md" key={message.id} padding="xs" mb="xs">
-              <Text fw={400} component="a">
-                {message.content}
-              </Text>
-            </Card>
-          ))}
+          {messagesQuery.data &&
+            messagesQuery.data.map((message) => (
+              <Card
+                withBorder
+                radius="md"
+                key={message.id}
+                padding="xs"
+                mb="xs"
+              >
+                <Text fw={400} component="a">
+                  {message.content}
+                </Text>
+                <Text fw={100} size="sm">
+                  {getTime(message.createdAt)}
+                </Text>
+              </Card>
+            ))}
           <Skeleton height={50} radius="md" animate={true} />
         </Container>
         <div

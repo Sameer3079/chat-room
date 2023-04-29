@@ -5,5 +5,6 @@ export const Message = z.object({
   content: z.string(),
   imageUrl: z.optional(z.string()),
   attachment: z.string(),
+  createdAt: z.date(),
 });
 export type Message = z.infer<typeof Message>;
