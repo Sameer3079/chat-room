@@ -34,6 +34,11 @@
     "singleQuote": true
   },
   "dependencies": {
+    "@emotion/react": "^11.10.8",
+    "@emotion/server": "^11.10.0",
+    "@mantine/core": "^6.0.9",
+    "@mantine/hooks": "^6.0.9",
+    "@mantine/next": "^6.0.9",
     "@prisma/client": "^4.12.0",
     "@tanstack/react-query": "^4.18.0",
     "@trpc/client": "^10.22.0",

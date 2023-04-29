@@ -1,37 +1,49 @@
+import {
+  Button,
+  Card,
+  Container,
+  Grid,
+  SimpleGrid,
+  Skeleton,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core';
 import { trpc } from '../utils/trpc';
 import { NextPageWithLayout } from './_app';
 import { inferProcedureInput } from '@trpc/server';
 import Link from 'next/link';
 import { CSSProperties, Fragment } from 'react';
-import Button from '~/components/Button';
 import { Message } from '~/models/message';
 import type { AppRouter } from '~/server/routers/_app';
 
+const child = <Skeleton height={140} radius="md" animate={true} />;
 const messagesList: Array<Message> = [
-  { attachment: '', content: 'Message 1', id: '12323' },
-  { attachment: '', content: 'Message 1', id: '12323' },
-  { attachment: '', content: 'Message 1', id: '12323' },
-  { attachment: '', content: 'Message 1', id: '12323' },
+  { attachment: '', content: 'Hey Sameer', id: '1' },
+  { attachment: '', content: 'Hey Bob', id: '2' },
+  { attachment: '', content: 'Message 1', id: '3' },
+  { attachment: '', content: 'Message 1', id: '4' },
 ];
 const IndexPage: NextPageWithLayout = () => {
   const utils = trpc.useContext();
-  const postsQuery = trpc.post.list.useInfiniteQuery(
-    {
-      limit: 5,
-    },
-    {
-      getPreviousPageParam(lastPage) {
-        return lastPage.nextCursor;
-      },
-    },
-  );
+  // const postsQuery = trpc.post.list.useInfiniteQuery(
+  //   {
+  //     limit: 5,
+  //   },
+  //   {
+  //     getPreviousPageParam(lastPage) {
+  //       return lastPage.nextCursor;
+  //     },
+  //   },
+  // );
 
-  const addPost = trpc.post.add.useMutation({
-    async onSuccess() {
-      // refetches posts after a post is added
-      await utils.post.list.invalidate();
-    },
-  });
+  // const addPost = trpc.post.add.useMutation({
+  //   async onSuccess() {
+  //     // refetches posts after a post is added
+  //     await utils.post.list.invalidate();
+  //   },
+  // });
 
   // prefetch all posts for instant navigation
   // useEffect(() => {
@@ -42,13 +54,28 @@ const IndexPage: NextPageWithLayout = () => {
   // }, [postsQuery.data, utils]);
 
   return (
-    <div style={styles}>
+    <Container size="xs">
       {/**
        * The type is defined and can be autocompleted
        * 💡 Tip: Hover over `data` to see the result type
        * 💡 Tip: CMD+Click (or CTRL+Click) on `text` to go to the server definition
        * 💡 Tip: Secondary click on `text` and "Rename Symbol" to rename it both on the client & server
        */}
+
+      {/* <Container my="md">
+        <SimpleGrid cols={1} breakpoints={[{ maxWidth: 'xs', cols: 1 }]}>
+          <Stack>
+            {child}
+            {child}
+            {child}
+          </Stack>
+        </SimpleGrid>
+      </Container> */}
+
+      <Container style={{ textAlign: 'center' }}>
+        <Title order={1}>Chat Room</Title>
+        <Text fs="italic">By Sameer Basil</Text>
+      </Container>
 
       {/* Top controls */}
       <div
@@ -73,25 +100,26 @@ const IndexPage: NextPageWithLayout = () => {
           <select name="" id="" style={inputStyles}>
             <option value="">Sort by Time</option>
           </select>
-          <Button
-            name="Asc"
-            styles={{ marginLeft: 'auto', marginRight: '0.5rem' }}
-          ></Button>
-          <Button name="Dsc" styles={{ marginRight: '0.5rem' }}></Button>
+          <Button ml="auto">Asc</Button>
+          <Button ml="xs">Dsc</Button>
         </div>
 
         {/* Scrollable messages container */}
+        <Container w="100%">
+          {messagesList.map((message) => (
+            <Card withBorder radius="md" key={message.id} padding="xs" mb="xs">
+              <Text fw={400} component="a">
+                {message.content}
+              </Text>
+            </Card>
+          ))}
+          <Skeleton height={50} radius="md" animate={true} />
+        </Container>
         <div
           style={{
             width: '100%',
           }}
-        >
-          {messagesList.map((message) => (
-            <div style={{ border: '1px solid red' }} key={message.id}>
-              {message.content}
-            </div>
-          ))}
-        </div>
+        ></div>
 
         {/* Bottom controls */}
         <div
@@ -105,15 +133,12 @@ const IndexPage: NextPageWithLayout = () => {
             marginTop: '1rem',
           }}
         >
-          <input type="text" style={inputStyles} />
-          <Button
-            name="Attach"
-            styles={{ marginLeft: 'auto', marginRight: '0.5rem' }}
-          ></Button>
-          <Button name="Send"></Button>
+          <TextInput placeholder="Your message" w="100%" />
+          <Button ml="xs">Attach 🖼️</Button>
+          <Button ml="xs">Send 🚀</Button>
         </div>
       </div>
-    </div>
+    </Container>
   );
 };
 
@@ -146,18 +171,18 @@ export default IndexPage;
 // };
 
 const styles: CSSProperties = {
-  width: '100vw',
-  height: '100vh',
-  display: 'flex',
-  flexWrap: 'wrap',
-  justifyContent: 'center',
-  alignItems: 'center',
+  // width: '100vw',
+  // height: '100vh',
+  // display: 'flex',
+  // flexWrap: 'wrap',
+  // justifyContent: 'center',
+  // alignItems: 'center',
 };
 
 const inputStyles: CSSProperties = {
-  padding: '0.5rem 0.75rem',
-  borderRadius: '0.25rem',
-  border: '1px solid #1e293b',
+  // padding: '0.5rem 0.75rem',
+  // borderRadius: '0.25rem',
+  // border: '1px solid #1e293b',
 };
 
 const messageStyles: CSSProperties = {};
