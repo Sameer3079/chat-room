@@ -2,9 +2,17 @@ import { trpc } from '../utils/trpc';
 import { NextPageWithLayout } from './_app';
 import { inferProcedureInput } from '@trpc/server';
 import Link from 'next/link';
-import { Fragment } from 'react';
+import { CSSProperties, Fragment } from 'react';
+import Button from '~/components/Button';
+import { Message } from '~/models/message';
 import type { AppRouter } from '~/server/routers/_app';
 
+const messagesList: Array<Message> = [
+  { attachment: '', content: 'Message 1', id: '12323' },
+  { attachment: '', content: 'Message 1', id: '12323' },
+  { attachment: '', content: 'Message 1', id: '12323' },
+  { attachment: '', content: 'Message 1', id: '12323' },
+];
 const IndexPage: NextPageWithLayout = () => {
   const utils = trpc.useContext();
   const postsQuery = trpc.post.list.useInfiniteQuery(
@@ -34,97 +42,78 @@ const IndexPage: NextPageWithLayout = () => {
   // }, [postsQuery.data, utils]);
 
   return (
-    <>
-      <h1>Welcome to your tRPC starter!</h1>
-      <p>
-        If you get stuck, check <a href="https://trpc.io">the docs</a>, write a
-        message in our <a href="https://trpc.io/discord">Discord-channel</a>, or
-        write a message in{' '}
-        <a href="https://github.com/trpc/trpc/discussions">
-          GitHub Discussions
-        </a>
-        .
-      </p>
+    <div style={styles}>
+      {/**
+       * The type is defined and can be autocompleted
+       * 💡 Tip: Hover over `data` to see the result type
+       * 💡 Tip: CMD+Click (or CTRL+Click) on `text` to go to the server definition
+       * 💡 Tip: Secondary click on `text` and "Rename Symbol" to rename it both on the client & server
+       */}
 
-      <h2>
-        Latest Posts
-        {postsQuery.status === 'loading' && '(loading)'}
-      </h2>
-
-      <button
-        onClick={() => postsQuery.fetchPreviousPage()}
-        disabled={
-          !postsQuery.hasPreviousPage || postsQuery.isFetchingPreviousPage
-        }
-      >
-        {postsQuery.isFetchingPreviousPage
-          ? 'Loading more...'
-          : postsQuery.hasPreviousPage
-          ? 'Load More'
-          : 'Nothing more to load'}
-      </button>
-
-      {postsQuery.data?.pages.map((page, index) => (
-        <Fragment key={page.items[0]?.id || index}>
-          {page.items.map((item) => (
-            <article key={item.id}>
-              <h3>{item.title}</h3>
-              <Link href={`/post/${item.id}`}>View more</Link>
-            </article>
-          ))}
-        </Fragment>
-      ))}
-
-      <hr />
-
-      <h3>Add a Post</h3>
-
-      <form
-        onSubmit={async (e) => {
-          /**
-           * In a real app you probably don't want to use this manually
-           * Checkout React Hook Form - it works great with tRPC
-           * @see https://react-hook-form.com/
-           * @see https://kitchen-sink.trpc.io/react-hook-form
-           */
-          e.preventDefault();
-          const $form = e.currentTarget;
-          const values = Object.fromEntries(new FormData($form));
-          type Input = inferProcedureInput<AppRouter['post']['add']>;
-          //    ^?
-          const input: Input = {
-            title: values.title as string,
-            text: values.text as string,
-          };
-          try {
-            await addPost.mutateAsync(input);
-
-            $form.reset();
-          } catch (cause) {
-            console.error({ cause }, 'Failed to add post');
-          }
+      {/* Top controls */}
+      <div
+        style={{
+          minWidth: '30vw',
+          maxWidth: '100vh',
+          display: 'flex',
+          flexWrap: 'wrap',
+          padding: '0.5rem',
         }}
       >
-        <label htmlFor="title">Title:</label>
-        <br />
-        <input
-          id="title"
-          name="title"
-          type="text"
-          disabled={addPost.isLoading}
-        />
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            borderRadius: '0.25rem',
+            marginBottom: '1rem',
+            padding: '0.5rem',
+            boxShadow: '0 0px 6px rgba(0, 0, 0, 0.25)',
+          }}
+        >
+          <select name="" id="" style={inputStyles}>
+            <option value="">Sort by Time</option>
+          </select>
+          <Button
+            name="Asc"
+            styles={{ marginLeft: 'auto', marginRight: '0.5rem' }}
+          ></Button>
+          <Button name="Dsc" styles={{ marginRight: '0.5rem' }}></Button>
+        </div>
 
-        <br />
-        <label htmlFor="text">Text:</label>
-        <br />
-        <textarea id="text" name="text" disabled={addPost.isLoading} />
-        <br />
-        <input type="submit" disabled={addPost.isLoading} />
-        {addPost.error && (
-          <p style={{ color: 'red' }}>{addPost.error.message}</p>
-        )}
-      </form>
-    </>
+        {/* Scrollable messages container */}
+        <div
+          style={{
+            width: '100%',
+          }}
+        >
+          {messagesList.map((message) => (
+            <div style={{ border: '1px solid red' }} key={message.id}>
+              {message.content}
+            </div>
+          ))}
+        </div>
+
+        {/* Bottom controls */}
+        <div
+          style={{
+            display: 'flex',
+            width: '100%',
+            marginBottom: '1rem',
+            padding: '0.5rem',
+            borderRadius: '0.25rem',
+            boxShadow: '0 0px 6px rgba(0, 0, 0, 0.25)',
+            marginTop: '1rem',
+          }}
+        >
+          <input type="text" style={inputStyles} />
+          <Button
+            name="Attach"
+            styles={{ marginLeft: 'auto', marginRight: '0.5rem' }}
+          ></Button>
+          <Button name="Send"></Button>
+        </div>
+      </div>
+    </div>
   );
 };
 
@@ -155,3 +144,20 @@ export default IndexPage;
 //     revalidate: 1,
 //   };
 // };
+
+const styles: CSSProperties = {
+  width: '100vw',
+  height: '100vh',
+  display: 'flex',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  alignItems: 'center',
+};
+
+const inputStyles: CSSProperties = {
+  padding: '0.5rem 0.75rem',
+  borderRadius: '0.25rem',
+  border: '1px solid #1e293b',
+};
+
+const messageStyles: CSSProperties = {};
