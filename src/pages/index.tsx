@@ -10,6 +10,7 @@ import {
 } from '@mantine/core';
 import { trpc } from '../utils/trpc';
 import { NextPageWithLayout } from './_app';
+import { useRef } from 'react';
 
 const child = <Skeleton height={140} radius="md" animate={true} />;
 
@@ -27,7 +28,9 @@ const getTime = (date: Date): string => {
 };
 
 const IndexPage: NextPageWithLayout = () => {
-  // const utils = trpc.useContext();
+  const messageTextRef = useRef<HTMLInputElement>(null);
+
+  const utils = trpc.useContext();
   // const postsQuery = trpc.post.list.useInfiniteQuery(
   //   {
   //     limit: 5,
@@ -46,6 +49,31 @@ const IndexPage: NextPageWithLayout = () => {
   //     await utils.post.list.invalidate();
   //   },
   // });
+
+  const sendMessage = trpc.msg.add.useMutation({
+    async onSuccess() {
+      // re-fetches messages after a message is sent
+      await utils.msg.list.invalidate();
+    },
+    onError(error) {
+      console.log(error);
+    },
+  });
+
+  async function sendMessageHandler() {
+    if (!messageTextRef || !messageTextRef.current) {
+      console.error('messageTextRef is null');
+      return;
+    }
+    const messageContent = messageTextRef.current.value;
+    if (messageContent.trim().length > 0) {
+      await sendMessage.mutateAsync({
+        content: messageContent,
+        imageUrl: undefined,
+      });
+      messageTextRef.current.value = '';
+    }
+  }
 
   // prefetch all posts for instant navigation
   // useEffect(() => {
@@ -142,9 +170,11 @@ const IndexPage: NextPageWithLayout = () => {
             marginTop: '1rem',
           }}
         >
-          <TextInput placeholder="Your message" w="100%" />
+          <TextInput placeholder="Your message" w="100%" ref={messageTextRef} />
           <Button ml="xs">Attach 🖼️</Button>
-          <Button ml="xs">Send 🚀</Button>
+          <Button ml="xs" onClick={sendMessageHandler}>
+            Send 🚀
+          </Button>
         </div>
       </div>
     </Container>

@@ -11,13 +11,12 @@ datasource db {
 }
 
 model Message {
-  id       String @id @map("_id")
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
   content  String
-  imageUrl String
+  imageUrl String?
 
   // To return `Date`s intact through the API we use transformers
   // https://trpc.io/docs/data-transformers
   // This is unique so it can be used for cursor-based pagination
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now()) @updatedAt
 }

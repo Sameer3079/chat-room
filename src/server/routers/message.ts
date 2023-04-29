@@ -1,16 +1,32 @@
-import { Message } from '~/models/message';
 import { publicProcedure, router } from '../trpc';
+import { prisma } from '../prisma';
+import { Prisma } from '@prisma/client';
+import { z } from 'zod';
+
+const defaultMessageSelect = Prisma.validator<Prisma.MessageSelect>()({
+  id: true,
+  content: true,
+  imageUrl: true,
+});
 
 export const messageRouter = router({
-  list: publicProcedure.query(() => {
-    const messageList: Array<Message> = [
-      { attachment: '', content: 'Hey Sameer', id: '1', createdAt: new Date() },
-      { attachment: '', content: 'Hey Bob', id: '2', createdAt: new Date() },
-      { attachment: '', content: 'Message 1', id: '3', createdAt: new Date() },
-      { attachment: '', content: 'Message 1', id: '4', createdAt: new Date() },
-    ];
-    return messageList;
+  list: publicProcedure.query(async () => {
+    const messages = await prisma.message.findMany({});
+    return messages;
   }),
-  add: publicProcedure.mutation(() => ''),
+  add: publicProcedure
+    .input(
+      z.object({
+        content: z.string().min(1).max(500),
+        imageUrl: z.optional(z.string()),
+      }),
+    )
+    .mutation(async ({ input }) => {
+      const message = await prisma.message.create({
+        data: input as any,
+        select: defaultMessageSelect,
+      });
+      return message;
+    }),
   delete: publicProcedure.mutation(() => ''),
 });
