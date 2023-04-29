@@ -60,7 +60,7 @@ const IndexPage: NextPageWithLayout = () => {
     },
   });
 
-  async function sendMessageHandler() {
+  async function sendMessageHandler(): Promise<void> {
     if (!messageTextRef || !messageTextRef.current) {
       console.error('messageTextRef is null');
       return;
@@ -72,6 +72,12 @@ const IndexPage: NextPageWithLayout = () => {
         imageUrl: undefined,
       });
       messageTextRef.current.value = '';
+    }
+  }
+
+  function onKeyUp(event: any): void {
+    if (event.key === 'Enter') {
+      sendMessageHandler();
     }
   }
 
@@ -170,7 +176,12 @@ const IndexPage: NextPageWithLayout = () => {
             marginTop: '1rem',
           }}
         >
-          <TextInput placeholder="Your message" w="100%" ref={messageTextRef} />
+          <TextInput
+            placeholder="Your message"
+            w="100%"
+            ref={messageTextRef}
+            onKeyUp={(e) => onKeyUp(e)}
+          />
           <Button ml="xs">Attach 🖼️</Button>
           <Button ml="xs" onClick={sendMessageHandler}>
             Send 🚀
