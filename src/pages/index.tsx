@@ -3,6 +3,7 @@ import {
   Card,
   Container,
   Grid,
+  Select,
   SimpleGrid,
   Skeleton,
   Stack,
@@ -62,16 +63,6 @@ const IndexPage: NextPageWithLayout = () => {
        * 💡 Tip: Secondary click on `text` and "Rename Symbol" to rename it both on the client & server
        */}
 
-      {/* <Container my="md">
-        <SimpleGrid cols={1} breakpoints={[{ maxWidth: 'xs', cols: 1 }]}>
-          <Stack>
-            {child}
-            {child}
-            {child}
-          </Stack>
-        </SimpleGrid>
-      </Container> */}
-
       <Container style={{ textAlign: 'center' }}>
         <Title order={1}>Chat Room</Title>
         <Text fs="italic">By Sameer Basil</Text>
@@ -85,6 +76,7 @@ const IndexPage: NextPageWithLayout = () => {
           display: 'flex',
           flexWrap: 'wrap',
           padding: '0.5rem',
+          marginTop: '1rem',
         }}
       >
         <div
@@ -97,11 +89,16 @@ const IndexPage: NextPageWithLayout = () => {
             boxShadow: '0 0px 6px rgba(0, 0, 0, 0.25)',
           }}
         >
-          <select name="" id="" style={inputStyles}>
-            <option value="">Sort by Time</option>
-          </select>
-          <Button ml="auto">Asc</Button>
-          <Button ml="xs">Dsc</Button>
+          <Select
+            placeholder="Sort order"
+            data={[{ value: 'sort-by-time', label: 'Sort by Time' }]}
+          />
+          <Button ml="auto" variant="subtle">
+            Asc ⬇️
+          </Button>
+          <Button ml="xs" variant="subtle">
+            Dsc ⬆️
+          </Button>
         </div>
 
         {/* Scrollable messages container */}
@@ -169,20 +166,3 @@ export default IndexPage;
 //     revalidate: 1,
 //   };
 // };
-
-const styles: CSSProperties = {
-  // width: '100vw',
-  // height: '100vh',
-  // display: 'flex',
-  // flexWrap: 'wrap',
-  // justifyContent: 'center',
-  // alignItems: 'center',
-};
-
-const inputStyles: CSSProperties = {
-  // padding: '0.5rem 0.75rem',
-  // borderRadius: '0.25rem',
-  // border: '1px solid #1e293b',
-};
-
-const messageStyles: CSSProperties = {};
