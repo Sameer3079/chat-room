@@ -44,7 +44,8 @@ export const messageRouter = router({
     .input(
       z.object({
         content: z.string().min(1).max(500),
-        imageUrl: z.optional(z.string()),
+        imageUrl: z.string().nullish(),
+        type: z.enum(['text', 'text-with-image']),
       }),
     )
     .mutation(async ({ input }) => {

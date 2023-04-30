@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const Message = z.object({
   id: z.string(),
+  type: z.enum(['text', 'text-with-image']),
   content: z.string(),
   imageUrl: z.optional(z.string()),
   createdAt: z.date(),

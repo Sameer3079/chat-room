@@ -68,7 +68,8 @@ const IndexPage: NextPageWithLayout = () => {
     if (messageContent.trim().length > 0) {
       await sendMessage.mutateAsync({
         content: messageContent,
-        imageUrl: undefined,
+        type: 'text',
+        imageUrl: null,
       });
       messageTextRef.current.value = '';
     }
