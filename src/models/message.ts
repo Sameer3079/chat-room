@@ -18,4 +18,7 @@ export const TextWithImageMessage = z.object({
 });
 export type TextWithImageMessage = z.infer<typeof TextWithImageMessage>;
 
+/**
+ * Discriminated Union
+ */
 export type Message = TextOnlyMessage | TextWithImageMessage;

@@ -30,7 +30,8 @@ export const messageRouter = router({
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: {
-          [input.sortBy]: input.sortOrder,
+          // [input.sortBy]: input.sortOrder,
+          createdAt: 'desc',
         },
       });
 
@@ -40,7 +41,7 @@ export const messageRouter = router({
         nextCursor = nextItem?.id;
       }
       return {
-        items: messages,
+        items: messages.reverse(),
         nextCursor,
       };
     }),

@@ -29,17 +29,16 @@ const IndexPage: NextPageWithLayout = () => {
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const [isSendingMessage, setIsSendingMessage] = useState<boolean>(false);
   const [attachedImage, setAttachedImage] = useState<File | null>(null);
-  // const observerRef = useRef<any>(null);
 
   const utils = trpc.useContext();
   const messagesQuery = trpc.msg.list.useInfiniteQuery(
     {
-      limit: 45,
+      limit: 10,
       sortBy: 'createdAt',
       sortOrder: 'asc',
     },
     {
-      getNextPageParam: (lastPage) => lastPage.nextCursor,
+      getPreviousPageParam: (lastPage) => lastPage.nextCursor,
     },
   );
 
@@ -122,27 +121,6 @@ const IndexPage: NextPageWithLayout = () => {
     }
   });
 
-  // useEffect(() => {
-  //   const observer = new IntersectionObserver((entries) => {
-  //     const [entry] = entries;
-  //     if (entry?.isIntersecting && !messagesQuery.isLoading) {
-  //       messagesQuery.fetchNextPage();
-  //     }
-  //   });
-
-  //   if (observerRef.current) {
-  //     observer.observe(observerRef.current);
-  //   }
-
-  //   return () => observer.disconnect();
-  // }, [messagesQuery, messagesQuery.isLoading]);
-
-  // useEffect(() => {
-  //   if (!messagesQuery.isLoading) return;
-
-  //   messagesQuery.fetchNextPage();
-  // }, [messagesQuery, messagesQuery.isLoading]);
-
   return (
     <Container size="xs">
       {/**
@@ -177,7 +155,7 @@ const IndexPage: NextPageWithLayout = () => {
         <Container
           ref={messageContainerRef}
           w="100%"
-          style={{ maxHeight: '60vh', overflowY: 'scroll' }}
+          style={{ maxHeight: '40vh', overflowY: 'scroll' }}
         >
           {messagesQuery.data?.pages?.map((page, index) => (
             <Fragment key={'message-page-' + index}>
