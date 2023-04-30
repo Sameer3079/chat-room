@@ -10,7 +10,7 @@ import {
 } from '@mantine/core';
 import { trpc } from '../utils/trpc';
 import { NextPageWithLayout } from './_app';
-import { useRef } from 'react';
+import { Fragment, useEffect, useRef } from 'react';
 
 const child = <Skeleton height={140} radius="md" animate={true} />;
 
@@ -31,28 +31,22 @@ const IndexPage: NextPageWithLayout = () => {
   const messageTextRef = useRef<HTMLInputElement>(null);
 
   const utils = trpc.useContext();
-  // const postsQuery = trpc.post.list.useInfiniteQuery(
-  //   {
-  //     limit: 5,
-  //   },
-  //   {
-  //     getPreviousPageParam(lastPage) {
-  //       return lastPage.nextCursor;
-  //     },
-  //   },
-  // );
-  const messagesQuery = trpc.msg.list.useQuery();
-
-  // const addPost = trpc.post.add.useMutation({
-  //   async onSuccess() {
-  //     // refetches posts after a post is added
-  //     await utils.post.list.invalidate();
-  //   },
-  // });
+  const messagesQuery = trpc.msg.list.useInfiniteQuery(
+    {
+      limit: 45,
+      sortBy: 'createdAt',
+      sortOrder: 'desc',
+    },
+    {
+      getNextPageParam: (lastPage) => lastPage.nextCursor,
+    },
+  );
 
   const sendMessage = trpc.msg.add.useMutation({
-    async onSuccess() {
+    async onSuccess(res) {
       // re-fetches messages after a message is sent
+      console.log(res);
+      // messagesQuery.data?.push({ ...res, createdAt: new Date() });
       await utils.msg.list.invalidate();
     },
     onError(error) {
@@ -83,11 +77,13 @@ const IndexPage: NextPageWithLayout = () => {
 
   // prefetch all posts for instant navigation
   // useEffect(() => {
-  //   const allPosts = postsQuery.data?.pages.flatMap((page) => page.items) ?? [];
-  //   for (const { id } of allPosts) {
-  //     void utils.post.byId.prefetch({ id });
-  //   }
-  // }, [postsQuery.data, utils]);
+  // const allMessages =
+  //   messagesQuery.data?.pages.flatMap((page) => page.items) ?? [];
+  // for (const { id } of allMessages) {
+  //   void utils.post.byId.prefetch({ id });
+  // }
+  // messagesQuery.fetchNextPage();
+  // }, [utils]);
 
   return (
     <Container size="xs">
@@ -133,29 +129,32 @@ const IndexPage: NextPageWithLayout = () => {
             Asc ⬇️
           </Button>
           <Button ml="xs" variant="subtle">
-            Dsc ⬆️
+            Desc ⬆️
           </Button>
         </div>
 
         {/* Scrollable messages container */}
-        <Container w="100%">
-          {messagesQuery.data &&
-            messagesQuery.data.map((message) => (
-              <Card
-                withBorder
-                radius="md"
-                key={message.id}
-                padding="xs"
-                mb="xs"
-              >
-                <Text fw={400} component="a">
-                  {message.content}
-                </Text>
-                <Text fw={100} size="sm">
-                  {getTime(message.createdAt)}
-                </Text>
-              </Card>
-            ))}
+        <Container w="100%" style={{ maxHeight: '60vh', overflowY: 'scroll' }}>
+          {messagesQuery.data?.pages?.map((page, index) => (
+            <Fragment key={'message-page-' + index}>
+              {page.items?.map((message) => (
+                <Card
+                  withBorder
+                  radius="md"
+                  key={message.id}
+                  padding="xs"
+                  mb="xs"
+                >
+                  <Text fw={400} component="a">
+                    {message.content}
+                  </Text>
+                  <Text fw={100} size="sm">
+                    {getFormattedDate(message.createdAt)}
+                  </Text>
+                </Card>
+              ))}
+            </Fragment>
+          ))}
           <Skeleton height={50} radius="md" animate={true} />
         </Container>
         <div

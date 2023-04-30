@@ -10,10 +10,33 @@ const defaultMessageSelect = Prisma.validator<Prisma.MessageSelect>()({
 });
 
 export const messageRouter = router({
-  list: publicProcedure.query(async () => {
-    const messages = await prisma.message.findMany({});
-    return messages;
-  }),
+  list: publicProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(50).nullish(),
+        cursor: z.string().nullish(),
+        sortBy: z.enum(['createdAt']),
+        sortOrder: z.enum(['asc', 'desc']),
+      }),
+    )
+    .query(async ({ input }) => {
+      const limit = input.limit ?? 50;
+      const { cursor } = input;
+      const messages = await prisma.message.findMany({
+        take: limit + 1,
+        cursor: cursor ? { id: cursor } : undefined,
+      });
+
+      let nextCursor: typeof cursor | undefined;
+      if (messages.length > limit) {
+        const nextItem = messages.pop();
+        nextCursor = nextItem?.id;
+      }
+      return {
+        items: messages,
+        nextCursor,
+      };
+    }),
   add: publicProcedure
     .input(
       z.object({
@@ -23,10 +46,15 @@ export const messageRouter = router({
     )
     .mutation(async ({ input }) => {
       const message = await prisma.message.create({
-        data: input as any,
+        data: input,
         select: defaultMessageSelect,
       });
       return message;
     }),
-  delete: publicProcedure.mutation(() => ''),
+  delete: publicProcedure.input(z.string()).mutation(async ({ input }) => {
+    const message = await prisma.message.delete({
+      where: { id: input },
+    });
+    return message;
+  }),
 });
