@@ -4,6 +4,7 @@ import type { ReactElement, ReactNode } from 'react';
 import { DefaultLayout } from '~/components/DefaultLayout';
 import { trpc } from '~/utils/trpc';
 import { MantineProvider } from '@mantine/core';
+import '../../public/styles.css';
 
 export type NextPageWithLayout<
   TProps = Record<string, unknown>,

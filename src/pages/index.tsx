@@ -29,11 +29,13 @@ const getTime = (date: Date): string => {
 
 const IndexPage: NextPageWithLayout = () => {
   const messageTextRef = useRef<HTMLInputElement>(null);
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+  // const observerRef = useRef<any>(null);
 
   const utils = trpc.useContext();
   const messagesQuery = trpc.msg.list.useInfiniteQuery(
     {
-      limit: 45,
+      limit: 10,
       sortBy: 'createdAt',
       sortOrder: 'desc',
     },
@@ -69,15 +71,36 @@ const IndexPage: NextPageWithLayout = () => {
     }
   }
 
-  // prefetch all posts for instant navigation
+  // Scroll to bottom of the chat in the beginning
+  useEffect(() => {
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTo(
+        0,
+        messageContainerRef.current.scrollHeight,
+      );
+    }
+  });
+
   // useEffect(() => {
-  // const allMessages =
-  //   messagesQuery.data?.pages.flatMap((page) => page.items) ?? [];
-  // for (const { id } of allMessages) {
-  //   void utils.post.byId.prefetch({ id });
-  // }
-  // messagesQuery.fetchNextPage();
-  // }, [utils]);
+  //   const observer = new IntersectionObserver((entries) => {
+  //     const [entry] = entries;
+  //     if (entry?.isIntersecting && !messagesQuery.isLoading) {
+  //       messagesQuery.fetchNextPage();
+  //     }
+  //   });
+
+  //   if (observerRef.current) {
+  //     observer.observe(observerRef.current);
+  //   }
+
+  //   return () => observer.disconnect();
+  // }, [messagesQuery, messagesQuery.isLoading]);
+
+  // useEffect(() => {
+  //   if (!messagesQuery.isLoading) return;
+
+  //   messagesQuery.fetchNextPage();
+  // }, [messagesQuery, messagesQuery.isLoading]);
 
   return (
     <Container size="xs">
@@ -93,42 +116,28 @@ const IndexPage: NextPageWithLayout = () => {
         <Text fs="italic">By Sameer Basil</Text>
       </Container>
 
-      {/* Top controls */}
-      <div
-        style={{
-          minWidth: '30vw',
-          maxWidth: '100vh',
-          display: 'flex',
-          flexWrap: 'wrap',
-          padding: '0.5rem',
-          marginTop: '1rem',
-        }}
-      >
-        <div
-          style={{
-            display: 'flex',
-            width: '100%',
-            borderRadius: '0.25rem',
-            marginBottom: '1rem',
-            padding: '0.5rem',
-            boxShadow: '0 0px 6px rgba(0, 0, 0, 0.25)',
-          }}
-        >
+      <div className="main-content">
+        {/* Top controls */}
+        <Container className="control-card">
           {/* Note: Commented out because this issue exists https://github.com/mantinedev/mantine/issues/2880 */}
           {/* <Select
-            placeholder="Sort order"
-            data={[{ value: 'sort-by-time', label: 'Sort by Time' }]}
-          /> */}
+          placeholder="Sort order"
+          data={[{ value: 'sort-by-time', label: 'Sort by Time' }]}
+        /> */}
           <Button ml="auto" variant="subtle">
             Asc ⬇️
           </Button>
           <Button ml="xs" variant="subtle">
             Desc ⬆️
           </Button>
-        </div>
+        </Container>
 
         {/* Scrollable messages container */}
-        <Container w="100%" style={{ maxHeight: '60vh', overflowY: 'scroll' }}>
+        <Container
+          ref={messageContainerRef}
+          w="100%"
+          style={{ maxHeight: '60vh', overflowY: 'scroll' }}
+        >
           {messagesQuery.data?.pages?.map((page, index) => (
             <Fragment key={'message-page-' + index}>
               {page.items?.map((message) => (
@@ -158,17 +167,7 @@ const IndexPage: NextPageWithLayout = () => {
         ></div>
 
         {/* Bottom controls */}
-        <div
-          style={{
-            display: 'flex',
-            width: '100%',
-            marginBottom: '1rem',
-            padding: '0.5rem',
-            borderRadius: '0.25rem',
-            boxShadow: '0 0px 6px rgba(0, 0, 0, 0.25)',
-            marginTop: '1rem',
-          }}
-        >
+        <Container className="control-card">
           <TextInput
             placeholder="Your message"
             w="100%"
@@ -181,7 +180,7 @@ const IndexPage: NextPageWithLayout = () => {
           <Button ml="xs" onClick={sendMessageHandler}>
             Send 🚀
           </Button>
-        </div>
+        </Container>
       </div>
     </Container>
   );
