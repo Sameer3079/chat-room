@@ -1,10 +1,21 @@
 import { z } from 'zod';
 
-export const Message = z.object({
+export const TextOnlyMessage = z.object({
   id: z.string(),
-  type: z.enum(['text', 'text-with-image']),
+  hasImage: z.literal(false),
   content: z.string(),
-  imageFileName: z.optional(z.string()),
   createdAt: z.date(),
 });
-export type Message = z.infer<typeof Message>;
+export type TextOnlyMessage = z.infer<typeof TextOnlyMessage>;
+
+export const TextWithImageMessage = z.object({
+  id: z.string(),
+  hasImage: z.literal(true),
+  content: z.string(),
+  imageFileName: z.string(),
+  imageUrl: z.string().url(),
+  createdAt: z.date(),
+});
+export type TextWithImageMessage = z.infer<typeof TextWithImageMessage>;
+
+export type Message = TextOnlyMessage | TextWithImageMessage;

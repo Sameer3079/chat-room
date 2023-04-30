@@ -28,10 +28,6 @@ const getTime = (date: Date): string => {
   return f.format(-1, 'minutes');
 };
 
-const getUrl = (fileName: string): string => {
-  return `https://chat-room-sameer-basil.s3.amazonaws.com/${fileName}`;
-};
-
 const IndexPage: NextPageWithLayout = () => {
   const messageTextRef = useRef<HTMLInputElement>(null);
   const messageImageRef = useRef<any>(null);
@@ -57,17 +53,11 @@ const IndexPage: NextPageWithLayout = () => {
       // re-fetches messages after a message is sent
       console.log(res);
       // messagesQuery.data?.push({ ...res, createdAt: new Date() });
-      await utils.msg.list.invalidate();
+      // await utils.msg.list.invalidate();
       setAttachedImage(null);
     },
     onError(error) {
       console.log(error);
-    },
-  });
-
-  const getSignedUrl = trpc.security.presignedUrl.useMutation({
-    async onSuccess(res) {
-      console.log(res);
     },
   });
 
@@ -87,33 +77,30 @@ const IndexPage: NextPageWithLayout = () => {
 
     setIsSendingMessage(true);
 
-    if (attachedImage) {
-      const signedUrl = await getSignedUrl.mutateAsync({
-        filename: attachedImage.name,
-        contentType: attachedImage.type,
-      });
-
-      try {
-        const response = await fetch(signedUrl, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': attachedImage.type,
-          },
-          body: attachedImage,
-        });
-        console.log(response);
-      } catch (error) {
-        console.error(error);
-      }
-    }
-
     const messageContent = messageTextRef.current.value;
     if (messageContent.trim().length > 0) {
-      await sendMessage.mutateAsync({
+      const signedUrl = await sendMessage.mutateAsync({
         content: messageContent,
-        type: attachedImage ? 'text-with-image' : 'text',
-        imageFileName: attachedImage ? attachedImage.name : null,
+        hasImage: !!attachedImage,
+        imageFileName: attachedImage ? attachedImage.name : undefined,
+        imageFileContentType: attachedImage ? attachedImage.type : undefined,
       });
+      if (signedUrl && attachedImage) {
+        try {
+          const response = await fetch(signedUrl, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': attachedImage.type,
+            },
+            body: attachedImage,
+          });
+          console.log(response);
+        } catch (error) {
+          console.error(error);
+        }
+
+        await utils.msg.list.invalidate();
+      }
       messageTextRef.current.value = '';
       setAttachedImage(null);
     }
@@ -210,10 +197,10 @@ const IndexPage: NextPageWithLayout = () => {
                   mb="xs"
                 >
                   <Container w="100%">
-                    {message.type && message.imageFileName ? (
+                    {message.hasImage && message.imageUrl ? (
                       <img
                         className="message-image"
-                        src={getUrl(message.imageFileName)}
+                        src={message.imageUrl}
                         alt=""
                       />
                     ) : null}
