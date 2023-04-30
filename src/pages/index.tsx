@@ -16,16 +16,11 @@ import { Fragment, useEffect, useRef, useState } from 'react';
 const child = <Skeleton height={140} radius="md" animate={true} />;
 
 const getFormattedDate = (date: Date): string => {
-  const f = new Intl.DateTimeFormat('en-us', { dateStyle: 'full' });
-  return f.format(date);
-};
-
-const getTime = (date: Date): string => {
-  const f = new Intl.RelativeTimeFormat('en-us', {
-    style: 'long',
-    numeric: 'auto',
+  const f = new Intl.DateTimeFormat('en-us', {
+    dateStyle: 'full',
+    timeStyle: 'short',
   });
-  return f.format(-1, 'minutes');
+  return f.format(date);
 };
 
 const IndexPage: NextPageWithLayout = () => {
@@ -98,9 +93,8 @@ const IndexPage: NextPageWithLayout = () => {
         } catch (error) {
           console.error(error);
         }
-
-        await utils.msg.list.invalidate();
       }
+      await utils.msg.list.invalidate();
       messageTextRef.current.value = '';
       setAttachedImage(null);
     }
@@ -196,7 +190,7 @@ const IndexPage: NextPageWithLayout = () => {
                   padding="xs"
                   mb="xs"
                 >
-                  <Container w="100%">
+                  <Container w="100%" m="0" p="0">
                     {message.hasImage && message.imageUrl ? (
                       <img
                         className="message-image"

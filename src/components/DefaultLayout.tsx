@@ -7,7 +7,7 @@ export const DefaultLayout = ({ children }: DefaultLayoutProps) => {
   return (
     <>
       <Head>
-        <title>Prisma Starter</title>
+        <title>Chat Room by Sameer Basil</title>
         <link rel="icon" href="/favicon.ico" />
       </Head>
 

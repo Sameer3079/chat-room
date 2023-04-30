@@ -31,6 +31,9 @@
 
 .message-image {
   object-fit: cover;
-  width: 10rem;
+  min-width: 10rem;
+  max-width: 24rem;
   height: 10rem;
+  border-radius: 0.25rem;
+  margin-bottom: 0.5rem;
 }
