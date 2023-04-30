@@ -11,10 +11,10 @@ datasource db {
 }
 
 model Message {
-  id       String  @id @default(auto()) @map("_id") @db.ObjectId
-  content  String
-  type     String
-  imageUrl String?
+  id            String  @id @default(auto()) @map("_id") @db.ObjectId
+  content       String
+  type          String
+  imageFileName String?
 
   // To return `Date`s intact through the API we use transformers
   // https://trpc.io/docs/data-transformers

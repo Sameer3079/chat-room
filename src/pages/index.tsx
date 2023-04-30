@@ -11,7 +11,7 @@ import {
 } from '@mantine/core';
 import { trpc } from '../utils/trpc';
 import { NextPageWithLayout } from './_app';
-import { Fragment, useEffect, useRef } from 'react';
+import { Fragment, useEffect, useRef, useState } from 'react';
 
 const child = <Skeleton height={140} radius="md" animate={true} />;
 
@@ -28,11 +28,17 @@ const getTime = (date: Date): string => {
   return f.format(-1, 'minutes');
 };
 
+const getUrl = (fileName: string): string => {
+  return `https://chat-room-sameer-basil.s3.amazonaws.com/${fileName}`;
+};
+
 let attachedImageFile: File | null = null;
 
 const IndexPage: NextPageWithLayout = () => {
   const messageTextRef = useRef<HTMLInputElement>(null);
+  const messageImageRef = useRef<any>(null);
   const messageContainerRef = useRef<HTMLDivElement>(null);
+  const [isSendingMessage, setIsSendingMessage] = useState<boolean>(false);
   // const observerRef = useRef<any>(null);
 
   const utils = trpc.useContext();
@@ -75,6 +81,13 @@ const IndexPage: NextPageWithLayout = () => {
       return;
     }
 
+    if (!messageImageRef || !messageImageRef.current) {
+      console.error('messageImageRef is null');
+      return;
+    }
+
+    setIsSendingMessage(true);
+
     if (attachedImageFile) {
       const signedUrl = await getSignedUrl.mutateAsync({
         filename: attachedImageFile.name,
@@ -100,12 +113,13 @@ const IndexPage: NextPageWithLayout = () => {
       await sendMessage.mutateAsync({
         content: messageContent,
         type: attachedImageFile ? 'text-with-image' : 'text',
-        imageUrl: attachedImageFile
-          ? `https://chat-room-sameer-basil.s3.amazonaws.com/${attachedImageFile.name}`
-          : null,
+        imageFileName: attachedImageFile ? attachedImageFile.name : null,
       });
       messageTextRef.current.value = '';
+      // messageImageRef.current.inputRef.current.value = '';
     }
+
+    setIsSendingMessage(false);
   }
 
   const deleteMessage = trpc.msg.delete.useMutation({
@@ -198,10 +212,10 @@ const IndexPage: NextPageWithLayout = () => {
                   mb="xs"
                 >
                   <Container w="100%">
-                    {message.type && message.imageUrl ? (
+                    {message.type && message.imageFileName ? (
                       <img
                         className="message-image"
-                        src={message.imageUrl}
+                        src={getUrl(message.imageFileName)}
                         alt=""
                       />
                     ) : null}
@@ -225,7 +239,9 @@ const IndexPage: NextPageWithLayout = () => {
               ))}
             </Fragment>
           ))}
-          <Skeleton height={50} radius="md" animate={true} />
+          {isSendingMessage ? (
+            <Skeleton height={50} radius="md" animate={true} />
+          ) : null}
         </Container>
         <div
           style={{
@@ -242,6 +258,7 @@ const IndexPage: NextPageWithLayout = () => {
             onKeyUp={(e) => {
               if (e.key === 'Enter') sendMessageHandler();
             }}
+            disabled={isSendingMessage}
           />
           <FileInput
             ml="xs"
@@ -250,8 +267,14 @@ const IndexPage: NextPageWithLayout = () => {
             style={{ maxWidth: '5rem' }}
             accept="image/png,image/jpeg"
             onChange={(file) => (attachedImageFile = file)}
+            ref={messageImageRef}
+            disabled={isSendingMessage}
           />
-          <Button ml="xs" onClick={sendMessageHandler}>
+          <Button
+            ml="xs"
+            onClick={sendMessageHandler}
+            disabled={isSendingMessage}
+          >
             Send 🚀
           </Button>
         </Container>

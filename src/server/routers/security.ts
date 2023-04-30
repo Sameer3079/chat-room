@@ -1,15 +1,9 @@
 import { z } from 'zod';
 import { publicProcedure, router } from '../trpc';
-import { S3 } from 'aws-sdk';
-
-const s3 = new S3({
-  region: 'us-east-1',
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-});
+import { BucketName, s3 } from '~/utils/s3';
 
 const params = {
-  Bucket: 'chat-room-sameer-basil',
+  Bucket: BucketName,
   Expires: 300,
 };
 

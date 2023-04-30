@@ -4,7 +4,7 @@ export const Message = z.object({
   id: z.string(),
   type: z.enum(['text', 'text-with-image']),
   content: z.string(),
-  imageUrl: z.optional(z.string()),
+  imageFileName: z.optional(z.string()),
   createdAt: z.date(),
 });
 export type Message = z.infer<typeof Message>;

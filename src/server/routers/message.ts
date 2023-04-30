@@ -2,11 +2,13 @@ import { publicProcedure, router } from '../trpc';
 import { prisma } from '../prisma';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
+import { BucketName, s3 } from '~/utils/s3';
 
 const defaultMessageSelect = Prisma.validator<Prisma.MessageSelect>()({
   id: true,
   content: true,
-  imageUrl: true,
+  imageFileName: true,
+  createdAt: true,
 });
 
 export const messageRouter = router({
@@ -44,7 +46,7 @@ export const messageRouter = router({
     .input(
       z.object({
         content: z.string().min(1).max(500),
-        imageUrl: z.string().nullish(),
+        imageFileName: z.string().nullish(),
         type: z.enum(['text', 'text-with-image']),
       }),
     )
@@ -56,7 +58,21 @@ export const messageRouter = router({
       return message;
     }),
   delete: publicProcedure.input(z.string()).mutation(async ({ input }) => {
-    const message = await prisma.message.delete({
+    const message = await prisma.message.findFirst({
+      where: {
+        id: input,
+      },
+    });
+    if (!message) return null;
+    if (message.type === 'text-with-image' && message.imageFileName) {
+      await s3
+        .deleteObject({
+          Bucket: BucketName,
+          Key: message.imageFileName,
+        })
+        .promise();
+    }
+    await prisma.message.delete({
       where: { id: input },
     });
     return message;
