@@ -53,9 +53,16 @@ const IndexPage: NextPageWithLayout = () => {
       console.log(res);
       // messagesQuery.data?.push({ ...res, createdAt: new Date() });
       await utils.msg.list.invalidate();
+      attachedImageFile = null;
     },
     onError(error) {
       console.log(error);
+    },
+  });
+
+  const getSignedUrl = trpc.security.presignedUrl.useMutation({
+    async onSuccess(res) {
+      console.log(res);
     },
   });
 
@@ -67,17 +74,38 @@ const IndexPage: NextPageWithLayout = () => {
       console.error('messageTextRef is null');
       return;
     }
-    console.log(attachedImageFile);
-    return;
-    // const messageContent = messageTextRef.current.value;
-    // if (messageContent.trim().length > 0) {
-    //   await sendMessage.mutateAsync({
-    //     content: messageContent,
-    //     type: 'text',
-    //     imageUrl: null,
-    //   });
-    //   messageTextRef.current.value = '';
-    // }
+
+    if (attachedImageFile) {
+      const signedUrl = await getSignedUrl.mutateAsync({
+        filename: attachedImageFile.name,
+        contentType: attachedImageFile.type,
+      });
+
+      try {
+        const response = await fetch(signedUrl, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': attachedImageFile.type,
+          },
+          body: attachedImageFile,
+        });
+        console.log(response);
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    const messageContent = messageTextRef.current.value;
+    if (messageContent.trim().length > 0) {
+      await sendMessage.mutateAsync({
+        content: messageContent,
+        type: attachedImageFile ? 'text-with-image' : 'text',
+        imageUrl: attachedImageFile
+          ? `https://chat-room-sameer-basil.s3.amazonaws.com/${attachedImageFile.name}`
+          : null,
+      });
+      messageTextRef.current.value = '';
+    }
   }
 
   const deleteMessage = trpc.msg.delete.useMutation({
@@ -169,6 +197,15 @@ const IndexPage: NextPageWithLayout = () => {
                   padding="xs"
                   mb="xs"
                 >
+                  <Container w="100%">
+                    {message.type && message.imageUrl ? (
+                      <img
+                        className="message-image"
+                        src={message.imageUrl}
+                        alt=""
+                      />
+                    ) : null}
+                  </Container>
                   <Text fw={400} component="a">
                     {message.content}
                   </Text>
