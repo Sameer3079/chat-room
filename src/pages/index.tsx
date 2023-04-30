@@ -32,13 +32,12 @@ const getUrl = (fileName: string): string => {
   return `https://chat-room-sameer-basil.s3.amazonaws.com/${fileName}`;
 };
 
-let attachedImageFile: File | null = null;
-
 const IndexPage: NextPageWithLayout = () => {
   const messageTextRef = useRef<HTMLInputElement>(null);
   const messageImageRef = useRef<any>(null);
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const [isSendingMessage, setIsSendingMessage] = useState<boolean>(false);
+  const [attachedImage, setAttachedImage] = useState<File | null>(null);
   // const observerRef = useRef<any>(null);
 
   const utils = trpc.useContext();
@@ -59,7 +58,7 @@ const IndexPage: NextPageWithLayout = () => {
       console.log(res);
       // messagesQuery.data?.push({ ...res, createdAt: new Date() });
       await utils.msg.list.invalidate();
-      attachedImageFile = null;
+      setAttachedImage(null);
     },
     onError(error) {
       console.log(error);
@@ -88,19 +87,19 @@ const IndexPage: NextPageWithLayout = () => {
 
     setIsSendingMessage(true);
 
-    if (attachedImageFile) {
+    if (attachedImage) {
       const signedUrl = await getSignedUrl.mutateAsync({
-        filename: attachedImageFile.name,
-        contentType: attachedImageFile.type,
+        filename: attachedImage.name,
+        contentType: attachedImage.type,
       });
 
       try {
         const response = await fetch(signedUrl, {
           method: 'PUT',
           headers: {
-            'Content-Type': attachedImageFile.type,
+            'Content-Type': attachedImage.type,
           },
-          body: attachedImageFile,
+          body: attachedImage,
         });
         console.log(response);
       } catch (error) {
@@ -112,19 +111,18 @@ const IndexPage: NextPageWithLayout = () => {
     if (messageContent.trim().length > 0) {
       await sendMessage.mutateAsync({
         content: messageContent,
-        type: attachedImageFile ? 'text-with-image' : 'text',
-        imageFileName: attachedImageFile ? attachedImageFile.name : null,
+        type: attachedImage ? 'text-with-image' : 'text',
+        imageFileName: attachedImage ? attachedImage.name : null,
       });
       messageTextRef.current.value = '';
-      // messageImageRef.current.inputRef.current.value = '';
+      setAttachedImage(null);
     }
 
     setIsSendingMessage(false);
   }
 
   const deleteMessage = trpc.msg.delete.useMutation({
-    async onSuccess(res) {
-      console.log(res);
+    async onSuccess() {
       await utils.msg.list.invalidate();
     },
   });
@@ -266,9 +264,10 @@ const IndexPage: NextPageWithLayout = () => {
             icon="🖼️"
             style={{ maxWidth: '5rem' }}
             accept="image/png,image/jpeg"
-            onChange={(file) => (attachedImageFile = file)}
+            onChange={(file) => setAttachedImage(file)}
             ref={messageImageRef}
             disabled={isSendingMessage}
+            value={attachedImage}
           />
           <Button
             ml="xs"
