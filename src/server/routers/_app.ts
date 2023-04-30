@@ -3,14 +3,13 @@
  */
 import { publicProcedure, router } from '../trpc';
 import { messageRouter } from './message';
-import { postRouter } from './post';
 
 export const appRouter = router({
   healthcheck: publicProcedure.query(() => 'yay!'),
 
-  post: postRouter,
-
   msg: messageRouter,
+
+  // security: securityRouter,
 });
 
 export type AppRouter = typeof appRouter;

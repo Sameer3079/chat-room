@@ -2,6 +2,7 @@ import {
   Button,
   Card,
   Container,
+  FileInput,
   Select,
   Skeleton,
   Text,
@@ -26,6 +27,8 @@ const getTime = (date: Date): string => {
   });
   return f.format(-1, 'minutes');
 };
+
+let attachedImageFile: File | null = null;
 
 const IndexPage: NextPageWithLayout = () => {
   const messageTextRef = useRef<HTMLInputElement>(null);
@@ -64,15 +67,17 @@ const IndexPage: NextPageWithLayout = () => {
       console.error('messageTextRef is null');
       return;
     }
-    const messageContent = messageTextRef.current.value;
-    if (messageContent.trim().length > 0) {
-      await sendMessage.mutateAsync({
-        content: messageContent,
-        type: 'text',
-        imageUrl: null,
-      });
-      messageTextRef.current.value = '';
-    }
+    console.log(attachedImageFile);
+    return;
+    // const messageContent = messageTextRef.current.value;
+    // if (messageContent.trim().length > 0) {
+    //   await sendMessage.mutateAsync({
+    //     content: messageContent,
+    //     type: 'text',
+    //     imageUrl: null,
+    //   });
+    //   messageTextRef.current.value = '';
+    // }
   }
 
   const deleteMessage = trpc.msg.delete.useMutation({
@@ -201,7 +206,14 @@ const IndexPage: NextPageWithLayout = () => {
               if (e.key === 'Enter') sendMessageHandler();
             }}
           />
-          <Button ml="xs">Attach 🖼️</Button>
+          <FileInput
+            ml="xs"
+            placeholder="Image"
+            icon="🖼️"
+            style={{ maxWidth: '5rem' }}
+            accept="image/png,image/jpeg"
+            onChange={(file) => (attachedImageFile = file)}
+          />
           <Button ml="xs" onClick={sendMessageHandler}>
             Send 🚀
           </Button>
