@@ -35,9 +35,9 @@ const IndexPage: NextPageWithLayout = () => {
   const utils = trpc.useContext();
   const messagesQuery = trpc.msg.list.useInfiniteQuery(
     {
-      limit: 10,
+      limit: 45,
       sortBy: 'createdAt',
-      sortOrder: 'desc',
+      sortOrder: 'asc',
     },
     {
       getNextPageParam: (lastPage) => lastPage.nextCursor,
@@ -56,6 +56,9 @@ const IndexPage: NextPageWithLayout = () => {
     },
   });
 
+  /**
+   * Executed on 'Enter' keyup or 'Send' button click.
+   */
   async function sendMessageHandler(): Promise<void> {
     if (!messageTextRef || !messageTextRef.current) {
       console.error('messageTextRef is null');
@@ -69,6 +72,17 @@ const IndexPage: NextPageWithLayout = () => {
       });
       messageTextRef.current.value = '';
     }
+  }
+
+  const deleteMessage = trpc.msg.delete.useMutation({
+    async onSuccess(res) {
+      console.log(res);
+      await utils.msg.list.invalidate();
+    },
+  });
+
+  async function onDeleteMessageClick(messageId: string): Promise<void> {
+    await deleteMessage.mutateAsync(messageId);
   }
 
   // Scroll to bottom of the chat in the beginning
@@ -142,6 +156,7 @@ const IndexPage: NextPageWithLayout = () => {
             <Fragment key={'message-page-' + index}>
               {page.items?.map((message) => (
                 <Card
+                  className="message-card"
                   withBorder
                   radius="md"
                   key={message.id}
@@ -154,6 +169,15 @@ const IndexPage: NextPageWithLayout = () => {
                   <Text fw={100} size="sm">
                     {getFormattedDate(message.createdAt)}
                   </Text>
+                  <Button
+                    className="remove-btn"
+                    color="red"
+                    variant="light"
+                    size="xs"
+                    onClick={() => onDeleteMessageClick(message.id)}
+                  >
+                    Delete
+                  </Button>
                 </Card>
               ))}
             </Fragment>

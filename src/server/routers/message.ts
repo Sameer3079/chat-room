@@ -25,6 +25,9 @@ export const messageRouter = router({
       const messages = await prisma.message.findMany({
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
+        orderBy: {
+          [input.sortBy]: input.sortOrder,
+        },
       });
 
       let nextCursor: typeof cursor | undefined;

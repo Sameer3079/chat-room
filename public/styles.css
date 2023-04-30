@@ -16,3 +16,15 @@
   border-radius: 0.25rem;
   box-shadow: 0 0px 6px rgba(0, 0, 0, 0.25);
 }
+
+.remove-btn {
+  display: none;
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  padding: 0rem 0.5rem;
+}
+
+.message-card:hover .remove-btn {
+  display: block;
+}
