@@ -12,6 +12,7 @@ import {
 import { trpc } from '../utils/trpc';
 import { NextPageWithLayout } from './_app';
 import { Fragment, useEffect, useRef, useState } from 'react';
+import { useInView } from 'react-intersection-observer';
 
 const child = <Skeleton height={140} radius="md" animate={true} />;
 
@@ -29,11 +30,12 @@ const IndexPage: NextPageWithLayout = () => {
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const [isSendingMessage, setIsSendingMessage] = useState<boolean>(false);
   const [attachedImage, setAttachedImage] = useState<File | null>(null);
+  const { ref, inView } = useInView();
 
   const utils = trpc.useContext();
   const messagesQuery = trpc.msg.list.useInfiniteQuery(
     {
-      limit: 10,
+      limit: 15,
       sortBy: 'createdAt',
       sortOrder: 'asc',
     },
@@ -94,11 +96,15 @@ const IndexPage: NextPageWithLayout = () => {
         }
       }
       await utils.msg.list.invalidate();
+      scrollToBottom();
       messageTextRef.current.value = '';
       setAttachedImage(null);
     }
 
     setIsSendingMessage(false);
+    window.setTimeout(() => {
+      messageTextRef.current?.focus();
+    }, 100);
   }
 
   const deleteMessage = trpc.msg.delete.useMutation({
@@ -111,15 +117,25 @@ const IndexPage: NextPageWithLayout = () => {
     await deleteMessage.mutateAsync(messageId);
   }
 
-  // Scroll to bottom of the chat in the beginning
-  useEffect(() => {
+  const scrollToBottom = () => {
     if (messageContainerRef.current) {
       messageContainerRef.current.scrollTo(
         0,
         messageContainerRef.current.scrollHeight,
       );
     }
-  });
+  };
+
+  // Scroll to bottom of the chat in the beginning
+  useEffect(() => {
+    scrollToBottom();
+  }, []);
+
+  useEffect(() => {
+    if (inView) {
+      messagesQuery.fetchPreviousPage();
+    }
+  }, [inView, messagesQuery]);
 
   return (
     <Container size="xs">
@@ -157,6 +173,23 @@ const IndexPage: NextPageWithLayout = () => {
           w="100%"
           style={{ maxHeight: '40vh', overflowY: 'scroll' }}
         >
+          <Button
+            ref={ref}
+            onClick={() => messagesQuery.fetchPreviousPage()}
+            disabled={
+              !messagesQuery.hasPreviousPage ||
+              messagesQuery.isFetchingPreviousPage
+            }
+          >
+            Load previous messages
+          </Button>
+          <Text style={{ textAlign: 'center' }} pb="0.5rem">
+            {messagesQuery.isFetchingPreviousPage
+              ? 'Loading more...'
+              : messagesQuery.hasPreviousPage
+              ? 'Load Newer'
+              : 'Nothing more to load'}
+          </Text>
           {messagesQuery.data?.pages?.map((page, index) => (
             <Fragment key={'message-page-' + index}>
               {page.items?.map((message) => (
@@ -216,6 +249,7 @@ const IndexPage: NextPageWithLayout = () => {
               if (e.key === 'Enter') sendMessageHandler();
             }}
             disabled={isSendingMessage}
+            autoFocus={true}
           />
           <FileInput
             ml="xs"
