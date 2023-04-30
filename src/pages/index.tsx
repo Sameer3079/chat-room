@@ -69,12 +69,6 @@ const IndexPage: NextPageWithLayout = () => {
     }
   }
 
-  function onKeyUp(event: any): void {
-    if (event.key === 'Enter') {
-      sendMessageHandler();
-    }
-  }
-
   // prefetch all posts for instant navigation
   // useEffect(() => {
   // const allMessages =
@@ -179,7 +173,9 @@ const IndexPage: NextPageWithLayout = () => {
             placeholder="Your message"
             w="100%"
             ref={messageTextRef}
-            onKeyUp={(e) => onKeyUp(e)}
+            onKeyUp={(e) => {
+              if (e.key === 'Enter') sendMessageHandler();
+            }}
           />
           <Button ml="xs">Attach 🖼️</Button>
           <Button ml="xs" onClick={sendMessageHandler}>
