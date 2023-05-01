@@ -1,6 +1,6 @@
 # Chat Room
 
-Live demo at https://vercel.com/sameer3079/chat-room/deployments
+Live demo at https://chat-room-ten-gules.vercel.app/
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/Sameer3079/chat-room/actions/workflows/main.yml/badge.svg">
@@ -38,10 +38,9 @@ pnpm dx:next
 ### Commands
 
 ```bash
-pnpm build      # runs `prisma generate` + `prisma migrate` + `next build`
+pnpm build      # runs `next build`
 pnpm db-reset   # resets local db
 pnpm dev        # starts next.js
-pnpm dx         # starts postgres db + runs migrations + seeds + starts next.js
 pnpm test-dev   # runs e2e tests on dev
 pnpm test-start # runs e2e tests on `next start` - build required before
 pnpm test:unit  # runs normal Vitest unit tests
