@@ -13,8 +13,6 @@ import { NextPageWithLayout } from './_app';
 import { Fragment, useEffect, useRef, useState } from 'react';
 import { useInView } from 'react-intersection-observer';
 
-const child = <Skeleton height={140} radius="md" animate={true} />;
-
 const getFormattedDate = (date: Date): string => {
   const f = new Intl.DateTimeFormat('en-us', {
     dateStyle: 'full',
@@ -278,6 +276,21 @@ const IndexPage: NextPageWithLayout = () => {
               ))}
             </Fragment>
           ))}
+
+          {/* Skeleton messages to improve loading experience */}
+          {messagesQuery.isFetching
+            ? new Array(10)
+                .fill(1, 0)
+                .map((_, index) => (
+                  <Skeleton
+                    key={'skeleton-message-' + index}
+                    height={60}
+                    mb="xs"
+                    radius="md"
+                    animate={true}
+                  ></Skeleton>
+                ))
+            : null}
         </Container>
         <div
           style={{
