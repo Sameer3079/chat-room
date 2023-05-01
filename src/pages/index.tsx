@@ -48,7 +48,9 @@ const IndexPage: NextPageWithLayout = () => {
 
   const onSortOrderChange = (value: 'asc' | 'desc') => {
     setSortOrder(value);
-    scrollToBottom();
+    window.setTimeout(() => {
+      scrollToBottom();
+    }, 100);
   };
 
   const onSortByChange = (value: string) => {
@@ -152,13 +154,6 @@ const IndexPage: NextPageWithLayout = () => {
 
   return (
     <Container size="xs">
-      {/**
-       * The type is defined and can be autocompleted
-       * 💡 Tip: Hover over `data` to see the result type
-       * 💡 Tip: CMD+Click (or CTRL+Click) on `text` to go to the server definition
-       * 💡 Tip: Secondary click on `text` and "Rename Symbol" to rename it both on the client & server
-       */}
-
       <Container style={{ textAlign: 'center' }}>
         <Title order={1}>Chat Room</Title>
         <Text fs="italic">By Sameer Basil</Text>
@@ -200,18 +195,31 @@ const IndexPage: NextPageWithLayout = () => {
         <Container
           ref={messageContainerRef}
           w="100%"
-          style={{ maxHeight: '40vh', overflowY: 'scroll' }}
+          style={{
+            height: '40vh',
+            overflowY: 'scroll',
+          }}
         >
-          <Button
-            ref={ref}
-            onClick={() => messagesQuery.fetchPreviousPage()}
-            disabled={
-              !messagesQuery.hasPreviousPage ||
-              messagesQuery.isFetchingPreviousPage
-            }
+          <div
+            style={{
+              display: 'flex',
+              justifyItems: 'center',
+              justifyContent: 'center',
+              marginBottom: '0.5rem',
+            }}
           >
-            Load previous messages
-          </Button>
+            <Button
+              ref={ref}
+              onClick={() => messagesQuery.fetchPreviousPage()}
+              disabled={
+                !messagesQuery.hasPreviousPage ||
+                messagesQuery.isFetchingPreviousPage
+              }
+              mb="0.5rem"
+            >
+              Load previous messages
+            </Button>
+          </div>
           <Text style={{ textAlign: 'center' }} pb="0.5rem">
             {messagesQuery.isFetchingPreviousPage
               ? 'Loading more...'
