@@ -3,7 +3,6 @@ import {
   Card,
   Container,
   FileInput,
-  Select,
   Skeleton,
   Text,
   TextInput,
@@ -192,22 +191,8 @@ const IndexPage: NextPageWithLayout = () => {
         </Container>
 
         {/* Scrollable messages container */}
-        <Container
-          ref={messageContainerRef}
-          w="100%"
-          style={{
-            height: '40vh',
-            overflowY: 'scroll',
-          }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              justifyItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '0.5rem',
-            }}
-          >
+        <Container ref={messageContainerRef} className="messages-container">
+          <div className="load-previous-messages-btn-container">
             <Button
               ref={ref}
               onClick={() => messagesQuery.fetchPreviousPage()}
@@ -215,18 +200,20 @@ const IndexPage: NextPageWithLayout = () => {
                 !messagesQuery.hasPreviousPage ||
                 messagesQuery.isFetchingPreviousPage
               }
-              mb="0.5rem"
+              mb="1rem"
             >
               Load previous messages
             </Button>
           </div>
-          <Text style={{ textAlign: 'center' }} pb="0.5rem">
+          <Text style={{ textAlign: 'center' }} pb="0.5rem" size="sm">
             {messagesQuery.isFetchingPreviousPage
               ? 'Loading more...'
               : messagesQuery.hasPreviousPage
               ? 'Load Newer'
               : 'Nothing more to load'}
           </Text>
+
+          {/* Messages list */}
           {messagesQuery.data?.pages?.map((page, index) => (
             <Fragment key={'message-page-' + index}>
               {page.items?.map((message) => (
