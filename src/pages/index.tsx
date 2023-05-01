@@ -42,6 +42,7 @@ const IndexPage: NextPageWithLayout = () => {
     },
     {
       getPreviousPageParam: (lastPage) => lastPage.nextCursor,
+      _optimisticResults: 'optimistic',
     },
   );
 
@@ -59,6 +60,27 @@ const IndexPage: NextPageWithLayout = () => {
   };
 
   const sendMessage = trpc.msg.add.useMutation({
+    onMutate(data) {
+      if (!messagesQuery.data) return;
+      const lastPage =
+        messagesQuery.data.pages[messagesQuery.data.pages.length - 1];
+      if (!lastPage) return;
+      lastPage.items = [
+        ...lastPage.items,
+        {
+          id: 'no_id_yet',
+          content: data.content,
+          createdAt: new Date(),
+          hasImage: !!data.hasImage,
+          imageFileName:
+            !!data.hasImage && data.imageFileName ? data.imageFileName : null,
+          imageUrl:
+            !!data.hasImage && data.imageFileName
+              ? `https://chat-room-sameer-basil.s3.amazonaws.com/${data.imageFileName}`
+              : null,
+        },
+      ];
+    },
     async onSuccess(res) {
       // re-fetches messages after a message is sent
       console.log(res);
@@ -124,6 +146,22 @@ const IndexPage: NextPageWithLayout = () => {
   const deleteMessage = trpc.msg.delete.useMutation({
     async onSuccess() {
       await utils.msg.list.invalidate();
+    },
+    onMutate() {
+      if (!messagesQuery.data) return;
+      // const messages = messagesQuery.data;
+      const lastPage =
+        messagesQuery.data.pages[messagesQuery.data.pages.length - 1];
+      if (!lastPage) return;
+      lastPage?.items.push({
+        id: 'no_id_yet',
+        content: '',
+        createdAt: new Date(),
+        hasImage: false,
+        imageFileName: null,
+        imageUrl: null,
+      });
+      return messagesQuery.data;
     },
   });
 
@@ -253,9 +291,6 @@ const IndexPage: NextPageWithLayout = () => {
               ))}
             </Fragment>
           ))}
-          {isSendingMessage ? (
-            <Skeleton height={50} radius="md" animate={true} />
-          ) : null}
         </Container>
         <div
           style={{

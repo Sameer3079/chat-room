@@ -72,15 +72,12 @@ export const messageRouter = router({
         // Create new unique file name to prevent overwriting existing files
         const newFileName = `${Date.now()}_${result.data.imageFileName}`;
 
-        console.log('New File Name:', newFileName);
         const newParams = {
           ...params,
           Key: newFileName,
           ContentType: result.data.imageFileContentType,
         };
-        console.log('newParams:', newParams);
         presignedUrl = await s3.getSignedUrlPromise('putObject', newParams);
-        console.log('Signed URL', presignedUrl);
 
         data = {
           content: input.content,
@@ -110,7 +107,6 @@ export const messageRouter = router({
       },
     });
     if (!message) return null;
-    console.log(message);
     if (message.hasImage && message.imageFileName) {
       await s3
         .deleteObject({
