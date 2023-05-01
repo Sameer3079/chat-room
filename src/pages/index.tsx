@@ -81,15 +81,8 @@ const IndexPage: NextPageWithLayout = () => {
         },
       ];
     },
-    async onSuccess(res) {
-      // re-fetches messages after a message is sent
-      console.log(res);
-      // messagesQuery.data?.push({ ...res, createdAt: new Date() });
-      // await utils.msg.list.invalidate();
-      setAttachedImage(null);
-    },
-    onError(error) {
-      console.log(error);
+    async onSettled() {
+      await utils.msg.list.invalidate();
     },
   });
 
@@ -144,9 +137,6 @@ const IndexPage: NextPageWithLayout = () => {
   }
 
   const deleteMessage = trpc.msg.delete.useMutation({
-    async onSuccess() {
-      await utils.msg.list.invalidate();
-    },
     onMutate(messageId) {
       if (!messagesQuery.data) return;
       const lastPage =
@@ -156,6 +146,9 @@ const IndexPage: NextPageWithLayout = () => {
         (page) =>
           (page.items = page.items.filter((item) => item.id !== messageId)),
       );
+    },
+    async onSettled() {
+      await utils.msg.list.invalidate();
     },
   });
 
