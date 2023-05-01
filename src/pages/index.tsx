@@ -147,21 +147,15 @@ const IndexPage: NextPageWithLayout = () => {
     async onSuccess() {
       await utils.msg.list.invalidate();
     },
-    onMutate() {
+    onMutate(messageId) {
       if (!messagesQuery.data) return;
-      // const messages = messagesQuery.data;
       const lastPage =
         messagesQuery.data.pages[messagesQuery.data.pages.length - 1];
       if (!lastPage) return;
-      lastPage?.items.push({
-        id: 'no_id_yet',
-        content: '',
-        createdAt: new Date(),
-        hasImage: false,
-        imageFileName: null,
-        imageUrl: null,
-      });
-      return messagesQuery.data;
+      messagesQuery.data.pages.forEach(
+        (page) =>
+          (page.items = page.items.filter((item) => item.id !== messageId)),
+      );
     },
   });
 
