@@ -31,18 +31,31 @@ const IndexPage: NextPageWithLayout = () => {
   const [isSendingMessage, setIsSendingMessage] = useState<boolean>(false);
   const [attachedImage, setAttachedImage] = useState<File | null>(null);
   const { ref, inView } = useInView();
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [sortBy, setSortBy] = useState<'createdAt' | 'content'>('createdAt');
 
   const utils = trpc.useContext();
   const messagesQuery = trpc.msg.list.useInfiniteQuery(
     {
       limit: 15,
-      sortBy: 'createdAt',
-      sortOrder: 'asc',
+      sortBy: sortBy,
+      sortOrder: sortOrder,
     },
     {
       getPreviousPageParam: (lastPage) => lastPage.nextCursor,
     },
   );
+
+  const onSortOrderChange = (value: 'asc' | 'desc') => {
+    setSortOrder(value);
+    scrollToBottom();
+  };
+
+  const onSortByChange = (value: string) => {
+    const typeValue = value as 'createdAt' | 'content';
+    setSortBy(typeValue);
+    scrollToBottom();
+  };
 
   const sendMessage = trpc.msg.add.useMutation({
     async onSuccess(res) {
@@ -156,13 +169,29 @@ const IndexPage: NextPageWithLayout = () => {
         <Container className="control-card">
           {/* Note: Commented out because this issue exists https://github.com/mantinedev/mantine/issues/2880 */}
           {/* <Select
-          placeholder="Sort order"
-          data={[{ value: 'sort-by-time', label: 'Sort by Time' }]}
-        /> */}
-          <Button ml="auto" variant="subtle">
+            placeholder="Sort order"
+            data={[{ value: 'createdAt', label: 'Sort by Time' }]}
+          /> */}
+
+          <select onChange={(e) => onSortByChange(e.target.value)}>
+            <option value="createdAt">Sort by Time</option>
+            <option value="content">Sort by Content</option>
+          </select>
+
+          <Button
+            ml="auto"
+            variant="subtle"
+            onClick={() => onSortOrderChange('asc')}
+            disabled={sortOrder === 'asc'}
+          >
             Asc ⬇️
           </Button>
-          <Button ml="xs" variant="subtle">
+          <Button
+            ml="xs"
+            variant="subtle"
+            onClick={() => onSortOrderChange('desc')}
+            disabled={sortOrder === 'desc'}
+          >
             Desc ⬆️
           </Button>
         </Container>

@@ -19,7 +19,7 @@ export const messageRouter = router({
       z.object({
         limit: z.number().min(1).max(50).nullish(),
         cursor: z.string().nullish(),
-        sortBy: z.enum(['createdAt']),
+        sortBy: z.enum(['createdAt', 'content']),
         sortOrder: z.enum(['asc', 'desc']),
       }),
     )
@@ -30,8 +30,7 @@ export const messageRouter = router({
         take: limit + 1,
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: {
-          // [input.sortBy]: input.sortOrder,
-          createdAt: 'desc',
+          [input.sortBy]: input.sortOrder,
         },
       });
 
