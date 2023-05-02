@@ -110,12 +110,13 @@ const IndexPage: NextPageWithLayout = () => {
 
     const messageContent = messageTextRef.current.value;
     if (messageContent.trim().length > 0) {
-      const { presignedUrl } = await sendMessage.mutateAsync({
+      const response = await sendMessage.mutateAsync({
         content: messageContent,
         hasImage: !!attachedImage,
         imageFileName: attachedImage ? attachedImage.name : undefined,
         imageFileContentType: attachedImage ? attachedImage.type : undefined,
       });
+      const presignedUrl = response.presignedUrl;
       if (presignedUrl && attachedImage) {
         try {
           await fetch(presignedUrl, {
@@ -285,7 +286,7 @@ const IndexPage: NextPageWithLayout = () => {
           ))}
 
           {/* Skeleton messages to improve loading experience */}
-          {messagesQuery.isFetching
+          {messagesQuery.isFetching && !messagesQuery.isFetchedAfterMount
             ? new Array(10)
                 .fill(1, 0)
                 .map((_, index) => (
