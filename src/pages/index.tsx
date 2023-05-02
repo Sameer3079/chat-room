@@ -116,10 +116,9 @@ const IndexPage: NextPageWithLayout = () => {
         imageFileName: attachedImage ? attachedImage.name : undefined,
         imageFileContentType: attachedImage ? attachedImage.type : undefined,
       });
-      const presignedUrl = response.presignedUrl;
-      if (presignedUrl && attachedImage) {
+      if (response.presignedUrl && attachedImage) {
         try {
-          await fetch(presignedUrl, {
+          await fetch(response.presignedUrl, {
             method: 'PUT',
             headers: {
               'Content-Type': attachedImage.type,
