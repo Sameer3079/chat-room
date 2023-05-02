@@ -94,11 +94,11 @@ export const messageRouter = router({
         };
       }
 
-      await prisma.message.create({
+      const message = await prisma.message.create({
         data: data,
         select: defaultMessageSelect,
       });
-      return presignedUrl;
+      return { message, presignedUrl };
     }),
   delete: publicProcedure.input(z.string()).mutation(async ({ input }) => {
     const message = await prisma.message.findFirst({
