@@ -57,12 +57,26 @@ const IndexPage: NextPageWithLayout = () => {
     scrollToBottom();
   };
 
+  const getAttachedImageAsDataUrl = (): Promise<string> => {
+    return new Promise((resolve) => {
+      if (!attachedImage) {
+        resolve('');
+        return;
+      }
+      const fileReader = new FileReader();
+      fileReader.onload = (e) => resolve((e.target?.result as string) || '');
+      fileReader.onerror = () => resolve('');
+      fileReader.readAsDataURL(attachedImage);
+    });
+  };
+
   const sendMessage = trpc.msg.add.useMutation({
-    onMutate(data) {
+    async onMutate(data) {
       if (!messagesQuery.data) return;
       const lastPage =
         messagesQuery.data.pages[messagesQuery.data.pages.length - 1];
       if (!lastPage) return;
+      const imageDataUrl = await getAttachedImageAsDataUrl();
       lastPage.items = [
         ...lastPage.items,
         {
@@ -72,15 +86,9 @@ const IndexPage: NextPageWithLayout = () => {
           hasImage: !!data.hasImage,
           imageFileName:
             !!data.hasImage && data.imageFileName ? data.imageFileName : null,
-          imageUrl:
-            !!data.hasImage && data.imageFileName
-              ? `https://chat-room-sameer-basil.s3.amazonaws.com/${data.imageFileName}`
-              : null,
+          imageUrl: !!data.hasImage && data.imageFileName ? imageDataUrl : null,
         },
       ];
-    },
-    async onSettled() {
-      await utils.msg.list.invalidate();
     },
   });
 
@@ -102,22 +110,21 @@ const IndexPage: NextPageWithLayout = () => {
 
     const messageContent = messageTextRef.current.value;
     if (messageContent.trim().length > 0) {
-      const signedUrl = await sendMessage.mutateAsync({
+      const { presignedUrl } = await sendMessage.mutateAsync({
         content: messageContent,
         hasImage: !!attachedImage,
         imageFileName: attachedImage ? attachedImage.name : undefined,
         imageFileContentType: attachedImage ? attachedImage.type : undefined,
       });
-      if (signedUrl && attachedImage) {
+      if (presignedUrl && attachedImage) {
         try {
-          const response = await fetch(signedUrl, {
+          await fetch(presignedUrl, {
             method: 'PUT',
             headers: {
               'Content-Type': attachedImage.type,
             },
             body: attachedImage,
           });
-          console.log(response);
         } catch (error) {
           console.error(error);
         }
