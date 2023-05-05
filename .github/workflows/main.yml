@@ -7,6 +7,7 @@ jobs:
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       BUCKET_NAME: ${{ secrets.BUCKET_NAME }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      NODE_ENV: production
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
