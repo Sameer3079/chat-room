@@ -46,3 +46,9 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Starting Server
+        run: pnpm start &
+
+      - name: Run e2e test
+        run: pnpm run test:e2e
