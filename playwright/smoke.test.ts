@@ -19,7 +19,6 @@ test('send a message', async ({ page, browser }) => {
     .click();
   await page.waitForTimeout(15 * 1000);
   await page.waitForLoadState('networkidle');
-  await page.reload();
 
   // Testing optimistic update
   expect(await page.content()).toContain(message);
